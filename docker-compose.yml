@@ -1,0 +1,59 @@
+services:
+  spotify-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: spotify-mcp-server
+    restart: unless-stopped
+
+    # Port mappings (from .env: PORT and OAUTH_PORT)
+    ports:
+      - "${PORT:-3356}:${PORT:-3356}" # MCP server
+      - "${OAUTH_PORT:-3357}:${OAUTH_PORT:-3357}" # OAuth callback
+
+    # Environment variables from .env file
+    env_file:
+      - .env
+
+    # Additional environment overrides (optional)
+    environment:
+      - NODE_ENV=production
+      - HOST=0.0.0.0
+
+    # Persistent volumes
+    volumes:
+      # Token storage (persists OAuth tokens)
+      - ./.data:/app/.data
+
+    # Health check
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "bun",
+          "run",
+          "-e",
+          "fetch('http://localhost:${PORT:-3356}/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+    # Resource limits (optional, adjust as needed)
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 512M
+        reservations:
+          cpus: "0.5"
+          memory: 256M
+
+    # Network configuration
+    networks:
+      - mcp-network
+
+networks:
+  mcp-network:
+    driver: bridge
