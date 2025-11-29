@@ -106,3 +106,7 @@ provider-tokens.json
 nohup.out
 *.orig
 *.pem
+docs/
+
+.cursor/
+.claude/

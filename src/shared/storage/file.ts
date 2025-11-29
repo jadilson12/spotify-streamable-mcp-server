@@ -23,12 +23,12 @@ type PersistShape = {
  * Simple sync encryption using Node.js crypto.
  * For async encryption, use the shared/crypto/aes-gcm module.
  */
-function createSyncEncryptor(keyBase64: string): {
+async function createSyncEncryptor(keyBase64: string): Promise<{
   encrypt: (plaintext: string) => string;
   decrypt: (ciphertext: string) => string;
-} {
+}> {
   // Lazy import to avoid issues in Workers
-  const crypto = require('node:crypto');
+  const crypto = await import('node:crypto');
 
   // Decode key (base64url)
   const key = Buffer.from(keyBase64.replace(/-/g, '+').replace(/_/g, '/'), 'base64');
@@ -87,13 +87,17 @@ export class FileTokenStore implements TokenStore {
    * @param persistPath - Path to the JSON file for persistence
    * @param encryptionKey - Base64url-encoded 32-byte key for AES-256-GCM encryption
    */
-  constructor(persistPath?: string, encryptionKey?: string) {
+  constructor(persistPath?: string, _encryptionKey?: string) {
     this.memory = new MemoryTokenStore();
     this.persistPath = persistPath ?? null;
 
+    this.load();
+  }
+
+  async initializeEncryption(encryptionKey: string): Promise<void> {
     if (encryptionKey) {
       try {
-        this.encryptor = createSyncEncryptor(encryptionKey);
+        this.encryptor = await createSyncEncryptor(encryptionKey);
         logger.debug('file_token_store', { message: 'Encryption enabled' });
       } catch (error) {
         logger.error('file_token_store', {
@@ -107,8 +111,6 @@ export class FileTokenStore implements TokenStore {
         message: 'No encryption key provided! Tokens stored in plaintext.',
       });
     }
-
-    this.load();
   }
 
   private load(): void {

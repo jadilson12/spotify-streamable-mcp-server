@@ -71,7 +71,7 @@ export function attachOAuthRoutes(
     }
   });
 
-  router.get('/oauth/callback', async (request: Request) => {
+  router.get('/callback', async (request: Request) => {
     logger.debug('oauth_workers', { message: 'Callback request received' });
 
     try {

@@ -163,7 +163,7 @@ export async function handleAuthorize(
     authUrl.searchParams.set('response_type', 'code');
     authUrl.searchParams.set('client_id', providerConfig.clientId);
 
-    const callbackPath = options.callbackPath || '/oauth/callback';
+    const callbackPath = options.callbackPath || '/callback';
     const cb = new URL(callbackPath, options.baseUrl).toString();
     authUrl.searchParams.set('redirect_uri', cb);
 
@@ -254,7 +254,7 @@ export async function handleProviderCallback(
   // Exchange code with provider
   const tokenEndpointPath = options.tokenEndpointPath || '/api/token';
   const tokenUrl = new URL(tokenEndpointPath, providerConfig.accountsUrl).toString();
-  const callbackPath = options.callbackPath || '/oauth/callback';
+  const callbackPath = options.callbackPath || '/callback';
   const cb = new URL(callbackPath, options.baseUrl).toString();
 
   const form = new URLSearchParams({

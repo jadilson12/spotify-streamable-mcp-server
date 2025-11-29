@@ -57,7 +57,7 @@ export function buildOAuthRoutes(
     }
   });
 
-  app.get('/oauth/callback', async (c) => {
+  app.get('/callback', async (c) => {
     logger.debug('oauth_hono', { message: 'Callback request received' });
 
     try {

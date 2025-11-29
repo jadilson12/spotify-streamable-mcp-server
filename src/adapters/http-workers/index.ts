@@ -139,7 +139,7 @@ export function createWorkerRouter(ctx: RouterContext): {
   // Discovery routes (/.well-known/*)
   attachDiscoveryRoutes(router, config);
 
-  // OAuth routes (/authorize, /token, /oauth/callback, etc.)
+  // OAuth routes (/authorize, /token, /callback, etc.)
   attachOAuthRoutes(router, tokenStore, config);
 
   // MCP endpoints

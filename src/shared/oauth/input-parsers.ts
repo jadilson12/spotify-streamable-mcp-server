@@ -116,7 +116,7 @@ export function buildFlowOptions(
   return {
     baseUrl: url.origin,
     isDev: config.NODE_ENV === 'development',
-    callbackPath: overrides.callbackPath ?? '/oauth/callback',
+    callbackPath: overrides.callbackPath ?? '/callback',
     tokenEndpointPath: overrides.tokenEndpointPath ?? '/api/token',
   };
 }
