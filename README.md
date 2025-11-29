@@ -91,6 +91,63 @@ bun dev
 # OAuth: http://127.0.0.1:3001
 ```
 
+## Docker Deployment
+
+### 1. Configure Environment
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` and set your Spotify credentials:
+
+```env
+PORT=3356
+OAUTH_PORT=3357
+AUTH_ENABLED=true
+
+# From https://developer.spotify.com/dashboard
+SPOTIFY_CLIENT_ID=your_client_id
+SPOTIFY_CLIENT_SECRET=your_client_secret
+
+# OAuth
+OAUTH_SCOPES=playlist-read-private playlist-read-collaborative playlist-modify-public playlist-modify-private user-read-playback-state user-modify-playback-state user-read-currently-playing user-library-read user-library-modify
+OAUTH_REDIRECT_URI=http://127.0.0.1:3357/oauth/callback
+OAUTH_REDIRECT_ALLOWLIST=http://127.0.0.1:3357/oauth/callback
+```
+
+### 2. Configure Spotify Dashboard
+
+Add the redirect URI in [Spotify Developer Dashboard](https://developer.spotify.com/dashboard):
+
+```
+http://127.0.0.1:3357/oauth/callback
+```
+
+### 3. Run with Docker Compose
+
+```bash
+docker-compose up -d
+```
+
+The server will be available at:
+- **MCP endpoint:** `http://127.0.0.1:3356/mcp`
+- **OAuth flow:** `http://127.0.0.1:3357`
+
+### 4. View Logs
+
+```bash
+docker-compose logs -f spotify-mcp
+```
+
+### 5. Stop Server
+
+```bash
+docker-compose down
+```
+
+**Note:** OAuth tokens are persisted in the `.data` directory, which is mounted as a volume in the container.
+
 ## Server Instructions (What the Model Sees)
 
 ```text
@@ -357,17 +414,55 @@ OAuth (PORT+1):
 
 ## Client Configuration (Claude Desktop)
 
+Add the following configuration to your Claude Desktop config file:
+
+**Location:**
+- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+- Linux: `~/.config/Claude/claude_desktop_config.json`
+
+### For Docker Deployment (Port 3356)
+
+```json
+{
+  "mcpServers": {
+    "spotify": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote@latest",
+        "http://127.0.0.1:3356/mcp"
+      ],
+      "env": {
+        "NO_PROXY": "127.0.0.1,localhost"
+      }
+    }
+  }
+}
+```
+
+### For Local Development (Port 3000)
+
 ```json
 {
   "mcpServers": {
     "spotify": {
       "command": "bunx",
-      "args": ["mcp-remote", "http://127.0.0.1:3000/mcp", "--transport", "http-only"],
-      "env": { "NO_PROXY": "127.0.0.1,localhost" }
+      "args": [
+        "mcp-remote",
+        "http://127.0.0.1:3000/mcp",
+        "--transport",
+        "http-only"
+      ],
+      "env": {
+        "NO_PROXY": "127.0.0.1,localhost"
+      }
     }
   }
 }
 ```
+
+**Note:** After updating the configuration, restart Claude Desktop for the changes to take effect.
 
 ## Cloudflare Workers
 
