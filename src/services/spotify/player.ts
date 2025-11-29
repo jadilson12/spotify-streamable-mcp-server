@@ -136,9 +136,25 @@ export async function queueUri(
   queue_uri: string,
   options: { device_id?: string },
 ) {
-  await callWithHandling(() =>
-    api.player.addItemToPlaybackQueue(queue_uri, options.device_id),
-  );
+  try {
+    await callWithHandling(() =>
+      api.player.addItemToPlaybackQueue(queue_uri, options.device_id),
+    );
+  } catch (error) {
+    // Handle JSON parse errors from Spotify's queue endpoint
+    // The queue endpoint often returns 204 No Content, but the SDK sometimes
+    // tries to parse the empty/malformed response as JSON, causing a SyntaxError
+    if (
+      error instanceof SyntaxError &&
+      !(error as { status?: number }).status
+    ) {
+      // Treat JSON parse errors without a status code as success
+      // since the queue command likely went through
+      return;
+    }
+    // Re-throw all other errors
+    throw error;
+  }
 }
 
 // ---------------------------------------------------------------------------
